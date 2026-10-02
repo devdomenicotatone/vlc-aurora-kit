@@ -1,0 +1,25 @@
+{
+ "scala": 1.0,
+ "main": [
+  960,
+  600
+ ],
+ "minimo": [
+  840,
+  552
+ ],
+ "playlist": [
+  490,
+  520
+ ],
+ "eqwin": [
+  490,
+  242
+ ],
+ "fullscreenController": [
+  720,
+  112
+ ],
+ "menu": "cassetto nel layout mainMenuLayout",
+ "cornice": "nativa (DWM)"
+}

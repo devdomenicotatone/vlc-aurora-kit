@@ -1,0 +1,12 @@
+# Opzioni applicate a vlcrc dal kit (chiave=valore, una per riga). Tutto il resto resta com'e'.
+# Vengono calcolate dall'installer e NON vanno messe qui: skins2-last (percorso della skin),
+# skins2-config (posizioni delle finestre per lo schermo) e http-password (generata o mantenuta).
+
+# interfaccia a skin con la skin Aurora
+intf=skins2
+# finestre di dialogo Qt con palette scura (insieme a QtStyle=Fusion in vlc-qt-interface.ini)
+qt-dark-palette=1
+# interfaccia web (telecomando da browser/telefono) sulla porta 8080
+extraintf=http
+# menu dei Blu-ray tramite Java (BD-J)
+bluray-menu=1

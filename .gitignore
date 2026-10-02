@@ -1,0 +1,23 @@
+# prodotti della build della skin (si rigenerano con genera-varianti.cmd)
+skin/src/Aurora/
+skin/src/Aurora.vlt
+skin/src/Aurora.json
+skin/src/__pycache__/
+# file temporanei delle prove della skin
+skin/src/test-vlcrc
+skin/src/test.pid
+skin/src/*.log
+skin/src/*.png
+!skin/src/testcard.png
+# log ed esiti degli script
+*.log
+installa.esito.json
+disinstalla.esito.json
+# pacchetti EXE (vanno nelle Release, non nel repository)
+dist/
+# cartella di lavoro per ricompilare il plugin (sorgenti e SDK di VLC, oggetti, dll appena compilata);
+# skins2-patched invece e' nel repository: e' il sorgente completo del modulo modificato, richiesto dalla GPL
+plugin/src/src/
+plugin/src/sdk/
+plugin/src/obj/
+plugin/src/libskins2_plugin.dll

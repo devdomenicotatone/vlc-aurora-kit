@@ -1,0 +1,14 @@
+* text=auto
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.sh text eol=lf
+*.vlt binary
+*.png binary
+*.ttf binary
+*.sfx binary
+*.exe binary
+*.ico binary
+*.dll binary
+*.patch text eol=lf
+plugin/src/skins2-patched/** text eol=lf
+COPYING text

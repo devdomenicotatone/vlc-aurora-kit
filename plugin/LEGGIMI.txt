@@ -1,0 +1,255 @@
+===================================================================
+Plugin skins2 patchato: Snap nativo di Windows per le finestre skin
+===================================================================
+
+Che cos'e'
+  libskins2_plugin.dll e' il modulo delle skin di VLC 3.x ricompilato con una
+  modifica che fa riconoscere a Windows le finestre della skin come finestre
+  "normali" agganciabili. Senza la patch le finestre skins2 sono senza cornice
+  di sistema e Windows non le aggancia (niente Snap ai bordi, niente Win+frecce,
+  niente layout di aggancio).
+
+Cosa cambia per te
+  - Trascinando la finestra contro un bordo o un angolo, Windows la aggancia
+    (Snap) come una qualsiasi finestra.
+  - Win+frecce spostano/agganciano la finestra; Win+Su la massimizza
+    all'area di lavoro, Win+Giu' la ripristina.
+  - Trascinando il titolo in cima parte il layout di aggancio (snap layouts).
+  - Le finestre agganciate della skin (playlist, equalizzatore) seguono lo
+    spostamento della finestra principale.
+  - Il pulsante Ingrandisci della skin usa la massimizzazione di sistema.
+  - Su Windows 11, fermando il mouse sul pulsante Ingrandisci compare il menu
+    di disposizione delle finestre (i layout di aggancio), come sulle barre
+    del titolo di sistema.
+  - La finestra si ridimensiona da tutti i lati e da tutti gli angoli, come
+    ogni finestra di Windows: il puntatore diventa la doppia freccia appena
+    fuori dal bordo sinistro, destro e inferiore (anche accanto al video) e
+    sulla fascia in cima alla barra del titolo. Prima si poteva solo dalle
+    maniglie disegnate dalla skin a destra, in basso e nell'angolo, e quella
+    di destra finiva sotto il video. A ridimensionare e' Windows: valgono le
+    misure minime della skin, e il doppio clic sul bordo alto o basso estende
+    la finestra a tutta l'altezza dello schermo.
+  - Il ridimensionamento e' fluido: a ogni passo la skin si ridisegna in un
+    quinto del tempo di prima (vedi "Ridisegno veloce" piu' sotto).
+  - Ridimensionando in fretta con un video aperto non compare piu' la
+    striscia chiara lungo il video (ne', allungando la finestra, l'ombra
+    della barra dei comandi): la zona che il video non ha ancora raggiunto
+    resta nera, come le bande attorno all'immagine.
+  - Nessuna cornice di sistema, mai: quando la finestra perde o riprende il
+    focus Windows non ridisegna piu' il vecchio telaio (la cornice chiara)
+    sopra i bordi della skin.
+  - Il contorno delle finestre rettangolari lo disegna Windows (DWM): su
+    Windows 11 angoli arrotondati con antialias, ombra (piu' leggera quando la
+    finestra non e' attiva) e bordo di 1 pixel nel colore della skin. Da
+    ingrandita o agganciata gli angoli tornano vivi, come per ogni finestra.
+    Le skin sagomate (con parti trasparenti) restano ritagliate dalla skin.
+  - Le finestre della skin non si riducono a icona da sole: la riduzione passa
+    dal pulsante della skin o dalla barra delle applicazioni, come nel VLC
+    originale. Prima Win+Giu' su una finestra non ingrandita ne lasciava un
+    moncone sopra la barra delle applicazioni.
+  - Le finestre di VLC (Apri media, Preferenze, Informazioni, i selettori di
+    file...) stanno sempre sopra il player, come le finestre di dialogo di una
+    normale applicazione, anche quando il player e' "sempre in primo piano":
+    prima in quel caso si aprivano dietro di lui.
+  - Telecomando web: la voce omonima del menu della skin Aurora apre nel
+    browser la pagina dell'interfaccia web di VLC (http://localhost:8080), e
+    la pagina sa dire al telefono a quale indirizzo collegarsi (riquadro
+    "Collega il telefono" con il codice QR). Con il plugin ufficiale di VLC la
+    voce chiude solo il menu e il riquadro ripiega sul nome del PC.
+  - Buy me a coffee: la voce in fondo al menu della skin Aurora apre nel
+    browser la pagina per sostenere l'autore del kit. Anche questa, con il plugin
+    ufficiale di VLC, chiude solo il menu.
+
+Come e' fatta la patch (sorgenti in src/)
+  - WS_THICKFRAME | WS_MAXIMIZEBOX | WS_SYSMENU aggiunti alle finestre skin di
+    primo livello: le rendono agganciabili per Windows. Niente WS_MINIMIZEBOX:
+    la riduzione a icona resta alla finestra radice, che ha il pulsante sulla
+    barra delle applicazioni.
+  - WM_NCCALCSIZE toglie alla cornice la barra e il bordo in alto e lascia i
+    bordi di ridimensionamento a sinistra, a destra e in basso: Windows li
+    tiene invisibili (sono la zona, appena fuori dalla finestra, da cui si
+    ridimensiona ogni finestra di Windows 10 e 11). L'area client e' quindi
+    cio' che la skin disegna, e tutto quel che si vede e' della skin.
+  - WM_NCHITTEST: una finestra che disegna da se' la cornice deve restituire
+    con questo messaggio il ridimensionamento standard ("Custom Window Frame
+    Using DWM", Microsoft Learn). I bordi rimasti li riconosce DefWindowProc;
+    in alto, dove il bordo non c'e', la fascia in cima alla skin risponde
+    HTTOP (e HTTOPLEFT / HTTOPRIGHT agli angoli), come nelle applicazioni che
+    disegnano la propria barra del titolo; le maniglie della skin rispondono
+    HTRIGHT, HTBOTTOM, HTBOTTOMRIGHT. Da li' in poi fa tutto Windows: cursori,
+    ciclo di ridimensionamento, Snap. Sono escluse le direzioni che il layout
+    non ammette e la finestra ingrandita. Lo spostamento resta della skin.
+  - La skin continua a ragionare sull'area che disegna: Win32Window::moveResize
+    aggiunge i bordi alla misura della finestra, WM_WINDOWPOSCHANGED li toglie
+    e la sagoma delle skin sagomate viene spostata di conseguenza. Con una
+    sagoma i bordi esterni restano fuori dalla finestra: quelle skin si
+    ridimensionano dalla fascia in alto e dalle loro maniglie.
+  - WM_NCACTIVATE -> DefWindowProc con lParam = -1: l'attivazione viene
+    elaborata ma il telaio non viene ridisegnato. Senza questo DefWindowProc
+    dipinge il telaio ridimensionabile in stile classico direttamente sopra
+    l'area client (chiaro da inattiva, grigio da attiva), perche' la cornice
+    che si aspetta non c'e'. E' la tecnica di WPF, Firefox e SDL.
+  - WM_NCPAINT -> 0 finche' la finestra ha una sagoma (region); senza sagoma
+    passa a DefWindowProc, perche' da li' dipende l'ombra del DWM.
+    WM_NCUAHDRAWCAPTION / WM_NCUAHDRAWFRAME (0xAE, 0xAF) -> 0, come Chromium.
+  - Sagoma: se la maschera della skin copre tutta la finestra non viene
+    applicata nessuna region. Una region spegne il telaio disegnato dal DWM
+    (ombra, angoli, bordo) e riporta quello classico. In quel caso il plugin
+    chiede al DWM gli angoli arrotondati (DWMWA_WINDOW_CORNER_PREFERENCE), il
+    bordo nel colore del pixel in alto al centro della skin
+    (DWMWA_BORDER_COLOR) e il telaio scuro se quel colore e' scuro
+    (DWMWA_USE_IMMERSIVE_DARK_MODE). Sono attributi di Windows 11: i sistemi
+    precedenti li rifiutano senza conseguenze.
+  - Il trascinamento del titolo avvia il ciclo nativo (WM_SYSCOMMAND SC_MOVE),
+    cosi' Snap, snap layouts e "scuoti per minimizzare" funzionano.
+  - WM_WINDOWPOSCHANGED risincronizza skin, layout attivo e finestre agganciate
+    quando e' il sistema a cambiare la geometria; una guardia "self move" evita
+    rimbalzi tra la skin e il sistema.
+  - La misura decisa dal sistema (Snap, Win+frecce, Ingrandisci, Ripristina)
+    viene presa cosi' com'e', senza la calamita della skin
+    (WindowManager::syncResize). La calamita verso i bordi dello schermo e le
+    ancore delle altre finestre resta per il ridimensionamento fatto a mano;
+    applicata anche qui, con playlist ed equalizzatore agganciati, dopo
+    Ingrandisci e Ripristina la finestra poteva tornare piu' bassa o piu' alta
+    di qualche pixel (fino al valore "magnet" della skin).
+  - WM_GETMINMAXINFO limita la massimizzazione all'area di lavoro del monitor
+    (i bordi invisibili restano fuori) e da' a Windows le misure minime e
+    massime del layout: valgono per il ridimensionamento e per Snap, che prima
+    poteva dare alla finestra una misura piu' piccola del minimo della skin.
+  - Ridisegno veloce. A ogni passo di ridimensionamento skins2 ridisegna tutto
+    il layout via software; quasi tutto il tempo andava in tre punti, ora
+    corretti senza cambiare un pixel del risultato (verificato confrontando le
+    catture della finestra prima e dopo):
+      * ScaledBitmap ricalcolava pixel per pixel anche le righe uguali alla
+        precedente; ora calcola una volta la corrispondenza delle colonne e
+        copia le righe ripetute;
+      * la barra di avanzamento riscalava a ogni passo l'intera sequenza dei
+        suoi fotogrammi (241 per Aurora); ora scala solo quello da disegnare;
+      * Win32Graphics::drawBitmap costruiva la maschera di trasparenza con
+        un'operazione sulle regioni per ogni segmento di ogni riga e passava
+        da AlphaBlend anche le immagini opache; ora la regione nasce in un
+        colpo solo (ExtCreateRegion) e le immagini opache vengono copiate.
+    Inoltre uno sfondo a tinta unita stirato sulla finestra (il caso normale)
+    e' un rettangolo pieno e non viene piu' riscalato, e la finestra non viene
+    ridipinta con il layout vecchio prima di ridisegnare quello nuovo.
+    Misurato sulla skin Aurora al 150%: da 19 a 3 ms per passo a 1260x780, da
+    29 a 7 ms a 1920x1200, da 46 a 10 ms a 2880x1700.
+  - Menu di disposizione sul pulsante Ingrandisci. Windows 11 lo apre sul
+    pulsante di sistema; a una finestra che disegna la propria barra chiede
+    di rispondere HTMAXBUTTON a WM_NCHITTEST nel punto in cui sta il suo
+    pulsante ("Support snap layouts for desktop apps on Windows 11",
+    Microsoft Learn). Il modulo lo fa per il controllo della skin (pulsante o
+    casella) il cui comando ingrandisce o ripristina la finestra. Da li' in
+    poi per Windows quel pulsante e' "non client" e i messaggi del mouse
+    arrivano in quella forma (WM_NCMOUSEMOVE, WM_NCLBUTTONDOWN...): il modulo
+    li rigira alla skin come eventi normali, cosi' evidenziazione, clic e
+    suggerimento restano quelli della skin; il clic non va a DefWindowProc,
+    che seguirebbe la pressione di un pulsante di sistema che non esiste.
+  - Sfondo nero per la finestra che ospita il video. E' una finestra figlia
+    che nessuno dipinge: alla skin i suoi messaggi non arrivano (Win32Proc li
+    passa a DefWindowProc) e la classe non ha un pennello di sfondo. La copre
+    l'uscita video di VLC, ma da un altro thread e qualche fotogramma dopo un
+    ridimensionamento; nel frattempo la parte scoperta mostrava quel che la
+    superficie della finestra aveva prima in quel punto: allargando, la
+    cornice di ridimensionamento come la dipinge il sistema (una striscia
+    chiara larga quanto il bordo); allungando, la vecchia barra dei comandi.
+    Ora Win32Proc risponde a WM_ERASEBKGND di quella finestra riempiendola di
+    nero. Provato fotografando la zona subito dopo ogni passo: da 87 a 0
+    fotografie con la striscia chiara su 450, da 58 a 0 con l'ombra della
+    barra.
+  - Nuovo comando per le skin, vlc.webInterface(): apre con ShellExecute
+    http://localhost:<http-port>/ nel browser predefinito. Una skin che lo usa
+    con il plugin ufficiale ottiene solo l'avviso "unknown action" nel log.
+  - Nuovo comando per le skin, vlc.openLink(indirizzo): apre nel browser
+    predefinito l'indirizzo scritto nella skin, solo se comincia per http://
+    o https:// (ShellExecute, con altro, avvierebbe qualunque cosa). Serve
+    alla voce "Buy me a coffee" di Aurora. L'indirizzo non deve contenere
+    il punto e virgola, che nelle skin separa le azioni.
+  - Indirizzi di rete del PC per la pagina web: l'interfaccia HTTP (Lua) non
+    puo' conoscerli, quindi il modulo li pubblica in una variabile di libvlc.
+    Lo script Lua fa scattare "skins2-lan-refresh" (vlc.var.trigger_callback)
+    e legge "skins2-lan-addresses": gli indirizzi IPv4 separati da spazi
+    (GetAdaptersAddresses), per primi quelli delle schede con un gateway,
+    cioe' quelle raggiungibili dagli altri dispositivi della rete.
+  - Finestre di dialogo sopra il player: le crea il modulo Qt in un altro
+    thread e non appartengono alla skin. Un WinEvent hook sul processo
+    (SetWinEventHook, eventi show / hide / destroy) le segue: mentre il player
+    e' "sempre in primo piano" le rende HWND_TOPMOST e, quando il primo piano
+    viene tolto, rimette HWND_NOTOPMOST solo a quelle che aveva cambiato lui.
+    WM_WINDOWPOSCHANGING delle finestre skin sostituisce hwndInsertAfter con
+    la piu' bassa finestra di dialogo visibile, cosi' il player portato avanti
+    si ferma sotto di loro. Gli spostamenti delle finestre degli altri thread
+    sono asincroni (SWP_ASYNCWINDOWPOS), per non restare mai in attesa di Qt.
+    Mentre e' il modulo a cambiare il primo piano quel messaggio non tocca
+    l'ordine: SetWindowPos( HWND_TOPMOST ) vi arriva come un normale
+    spostamento in cima, e trattenuto sotto una finestra di dialogo non ancora
+    in primo piano andava perso (attivando il primo piano con una finestra di
+    dialogo gia' aperta, il player a volte restava una finestra normale). Le
+    finestre di dialogo seguono dopo che tutte le finestre della skin hanno
+    cambiato stato.
+  - I percorsi dei sorgenti che VLC mette nei messaggi (__FILE__) sono resi
+    relativi con -ffile-prefix-map: nella dll non restano percorsi del PC su
+    cui e' stata compilata.
+  File toccati: os_window.hpp, win32/win32_window.{hpp,cpp}, win32/win32_loop.cpp,
+  win32/win32_graphics.cpp, src/generic_window.{hpp,cpp}, src/top_window.{hpp,cpp},
+  src/window_manager.{hpp,cpp}, controls/ctrl_move.cpp, commands/cmd_minimize.{hpp,cpp},
+  parser/interpreter.cpp, src/skin_main.cpp, win32/win32_factory.{hpp,cpp},
+  src/scaled_bitmap.{hpp,cpp}, controls/ctrl_slider.{hpp,cpp},
+  controls/ctrl_image.{hpp,cpp}, controls/ctrl_generic.hpp, controls/ctrl_resize.hpp,
+  controls/ctrl_button.{hpp,cpp}, controls/ctrl_checkbox.{hpp,cpp}, win32/win32_loop.hpp.
+  Diff completo in src/skins2-snap.patch (2533 righe, 31 file).
+
+Licenza e sorgenti
+  skins2 e' parte di VLC media player (copyright VideoLAN e autori) ed e'
+  distribuito con la GNU General Public License versione 2 o successiva; le
+  modifiche del kit (copyright 2026 Domenico Tatone) hanno la stessa licenza.
+  Il testo e' nel file COPYING del kit.
+  Il sorgente completo del modulo modificato, quello da cui e' compilata la
+  dll, e' in src/skins2-patched/ : ogni file cambiato lo dice nella seconda
+  riga dell'intestazione ("modified in 2026 for the VLC Aurora kit").
+  Per compilarlo servono anche le intestazioni di VLC 3.0.24 (cartelle
+  include/ e compat/ dei sorgenti ufficiali) e libvlccore.lib dell'SDK, non
+  modificati: https://download.videolan.org/pub/videolan/vlc/3.0.24/
+  Nella dll sono collegate staticamente, dai pacchetti MSYS2 mingw-w64 (i
+  sorgenti di ognuna sono su https://packages.msys2.org):
+    FreeType 2.14.3 (licenza FreeType o GPL 2), HarfBuzz 14.5.0 (MIT),
+    GLib 2.90.0 (LGPL 2.1), PCRE2 10.49 (BSD), Graphite2 1.3.15 (LGPL 2.1),
+    Brotli 1.2.0 (MIT), libpng 1.6.59 (licenza libpng), bzip2 1.0.8 (licenza
+    bzip2), zlib 1.3.2 (licenza zlib), gettext-runtime 1.0 / libintl
+    (LGPL 2.1), il runtime di GCC 16.2.0 (GPL 3 con eccezione per le librerie
+    di runtime) e quello di mingw-w64 con winpthreads (ZPL, MIT, pubblico
+    dominio).
+  Questo modulo non e' una versione ufficiale di VideoLAN.
+
+Compatibilita'
+  Compilato contro l'SDK ufficiale di VLC 3.0.24, simbolo vlc_entry__3_0_0f:
+  l'ABI dei plugin e' la stessa per tutta la serie 3.0.x, quindi funziona con
+  qualunque VLC 3.0.x a 64 bit. NON e' per VLC 4.
+  Collaudato su Windows 11 25H2 (build 26200). Su Windows 10 gli attributi per
+  angoli e bordo non esistono: le finestre restano ad angoli vivi (non provato).
+
+Come ricostruirla (trasparenza / verifica)
+  Serve MSYS2 con mingw-w64 (pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-freetype
+  mingw-w64-x86_64-zlib mingw-w64-x86_64-pkgconf) e i sorgenti di VLC 3.0.24 piu'
+  l'SDK win64 (download.videolan.org). La cartella di lavoro deve contenere
+    src/vlc-3.0.24/        i sorgenti di VLC scompattati
+    sdk/vlc-3.0.24/sdk/    l'SDK (lib/libvlccore.lib)
+  ed e' la cartella src/ del plugin oppure quella indicata da SKINS2_BUILD.
+  Con C:\msys64\mingw64\bin nel PATH (shell MSYS2 MINGW64 o Git Bash), in src/:
+    python apply_patch.py       # ricrea skins2-patched dai sorgenti ufficiali e applica le modifiche
+    bash build.sh               # compila libskins2_plugin.dll nella cartella di lavoro
+  config.h e' il config minimale usato per la compilazione con mingw.
+  skins2-snap.patch si rigenera dalla cartella di lavoro con
+    diff -ruN src/vlc-3.0.24/modules/gui/skins2 skins2-patched
+
+Installazione e ripristino
+  L'installer del kit (installa.cmd) mette la dll in
+  C:\Program Files\VideoLAN\VLC\plugins\gui\libskins2_plugin.dll, dopo aver
+  salvato l'originale come libskins2_plugin.dll.orig, e rigenera la cache dei
+  plugin (vlc-cache-gen.exe). Se un aggiornamento di VLC ha rimesso la sua
+  dll, alla reinstallazione la copia .orig viene aggiornata con quella.
+  Per tornare all'originale: il disinstallatore del kit (disinstalla.cmd o
+  "App installate") lo fa da solo; a mano, rimetti il file .orig al posto
+  della dll e rilancia vlc-cache-gen.exe (serve amministratore).
+
+SHA-256 della dll: vedi libskins2_plugin.dll.sha256

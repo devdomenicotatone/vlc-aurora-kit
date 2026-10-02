@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F1218">
+<meta name="color-scheme" content="dark">
+<title>Aurora · VLC</title>
+<link rel="icon" type="image/png" href="aurora/favicon.png">
+<link rel="stylesheet" href="aurora/aurora.css">
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5.5v13a1 1 0 0 0 1.52.86l10.5-6.5a1 1 0 0 0 0-1.72L8.52 4.64A1 1 0 0 0 7 5.5Z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.2"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.2"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 6.1v11.8a1 1 0 0 1-1.55.84L9.2 12.84a1 1 0 0 1 0-1.68l8.25-5.9A1 1 0 0 1 19 6.1Z"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><rect x="16.4" y="5" width="2.6" height="14" rx="1"/><path d="M5 6.1v11.8a1 1 0 0 0 1.55.84l8.25-5.9a1 1 0 0 0 0-1.68l-8.25-5.9A1 1 0 0 0 5 6.1Z"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M4 7h3.2c1.2 0 2.3.6 3 1.6l5.6 7.8c.7 1 1.8 1.6 3 1.6H20M4 17h3.2c1.2 0 2.3-.6 3-1.6l.9-1.3M13.8 9.9l.9-1.3c.7-1 1.8-1.6 3-1.6H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 3.5 20 6.5l-3 3M20 6.5H8.5A4.5 4.5 0 0 0 4 11v1M7 20.5 4 17.5l3-3M4 17.5h11.5A4.5 4.5 0 0 0 20 13v-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-repeat1" viewBox="0 0 24 24"><path d="M17 3.5 20 6.5l-3 3M20 6.5H8.5A4.5 4.5 0 0 0 4 11v1M7 20.5 4 17.5l3-3M4 17.5h11.5A4.5 4.5 0 0 0 20 13v-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.2 10.2 12.6 9.2V15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9.5v5a1 1 0 0 0 1 1h2.6l4 3.2a.8.8 0 0 0 1.3-.6V5.9a.8.8 0 0 0-1.3-.6l-4 3.2H5a1 1 0 0 0-1 1Z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.8 6a9 9 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5v5a1 1 0 0 0 1 1h2.6l4 3.2a.8.8 0 0 0 1.3-.6V5.9a.8.8 0 0 0-1.3-.6l-4 3.2H5a1 1 0 0 0-1 1Z"/><path d="m16 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-6.5 6.5M10 20H4v-6M4 20l6.5-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-rew" viewBox="0 0 24 24"><path d="M12 6.2v11.6a.9.9 0 0 1-1.42.73L4.3 12.73a.9.9 0 0 1 0-1.46l6.28-5.8A.9.9 0 0 1 12 6.2Zm8 0v11.6a.9.9 0 0 1-1.42.73l-6.28-5.8a.9.9 0 0 1 0-1.46l6.28-5.8A.9.9 0 0 1 20 6.2Z"/></symbol>
+  <symbol id="i-ff" viewBox="0 0 24 24"><path d="M12 6.2v11.6a.9.9 0 0 0 1.42.73l6.28-5.8a.9.9 0 0 0 0-1.46l-6.28-5.8A.9.9 0 0 0 12 6.2Zm-8 0v11.6a.9.9 0 0 0 1.42.73l6.28-5.8a.9.9 0 0 0 0-1.46L5.42 5.47A.9.9 0 0 0 4 6.2Z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.66 0l2.83-2.83a4 4 0 0 0-5.66-5.66l-1.1 1.1M14 10a4 4 0 0 0-5.66 0l-2.83 2.83a4 4 0 0 0 5.66 5.66l1.1-1.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4.2a1.5 1.5 0 0 1 1.2.6l.9 1.2a1.5 1.5 0 0 0 1.2.6H19a1.5 1.5 0 0 1 1.5 1.5v7.6A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5v-10Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M5 18.5V9a2 2 0 0 1 2-2h4l1.5 2H17a2 2 0 0 1 2 2v7.5M12 11v6m0-6-2.5 2.5M12 11l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-film" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 5v14M16 5v14M4 9h4M4 15h4M16 9h4M16 15h4" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M10 17.5a3 3 0 1 1-2-2.83V6l10-2v10.5a3 3 0 1 1-2-2.83V7.1l-6 1.2v9.2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M9.5 7V5.5A1.5 1.5 0 0 1 11 4h2a1.5 1.5 0 0 1 1.5 1.5V7M7 7l.8 11.2A1.5 1.5 0 0 0 9.3 19.6h5.4a1.5 1.5 0 0 0 1.5-1.4L17 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10.8 17.6h2.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-eq" viewBox="0 0 24 24"><path d="M5 4v16M12 4v16M19 4v16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="5" cy="15" r="2.2" fill="currentColor"/><circle cx="12" cy="8.5" r="2.2" fill="currentColor"/><circle cx="19" cy="12.5" r="2.2" fill="currentColor"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="brand">
+    <span class="dot"><svg><use href="#i-play"/></svg></span>
+    <span class="name">Aurora</span>
+    <span class="host" id="host">VLC</span>
+  </div>
+  <div class="top-actions">
+    <button class="chip" id="bPhone" title="Collega il telefono a questo telecomando"><svg><use href="#i-phone"/></svg><span>Telefono</span></button>
+    <div class="conn" id="conn" title="Stato del collegamento"><span class="led"></span><span id="connText">collegamento…</span></div>
+  </div>
+</header>
+
+<main class="grid">
+  <section class="card player">
+    <div class="now">
+      <div class="art" id="art">
+        <img id="artImg" alt="" draggable="false">
+        <svg class="art-fallback"><use href="#i-note"/></svg>
+      </div>
+      <div class="meta">
+        <div class="title" id="title">Nessun elemento in riproduzione</div>
+        <div class="sub" id="subtitle">Scegli dalla playlist, sfoglia il PC o incolla un indirizzo</div>
+        <div class="state" id="state"><span class="badge" id="stateBadge">Fermo</span><span id="rateBadge" class="badge ghost hidden">1.00×</span></div>
+      </div>
+    </div>
+
+    <div class="seek">
+      <span class="time" id="tCur">0:00</span>
+      <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="Posizione" disabled>
+      <span class="time" id="tTot">0:00</span>
+    </div>
+
+    <div class="transport">
+      <button class="tbtn toggle" id="bShuffle" title="Riproduzione casuale"><svg><use href="#i-shuffle"/></svg></button>
+      <button class="tbtn" id="bPrev" title="Precedente"><svg><use href="#i-prev"/></svg></button>
+      <button class="playbtn" id="bPlay" title="Riproduci / Pausa"><svg class="ic-play"><use href="#i-play"/></svg><svg class="ic-pause"><use href="#i-pause"/></svg></button>
+      <button class="tbtn" id="bNext" title="Successivo"><svg><use href="#i-next"/></svg></button>
+      <button class="tbtn toggle" id="bRepeat" title="Ripetizione: spenta"><svg class="ic-loop"><use href="#i-repeat"/></svg><svg class="ic-one"><use href="#i-repeat1"/></svg></button>
+    </div>
+
+    <div class="secondary">
+      <button class="sbtn" id="bStop" title="Stop"><svg><use href="#i-stop"/></svg></button>
+      <div class="volume">
+        <button class="sbtn toggle" id="bMute" title="Muto"><svg class="ic-vol"><use href="#i-volume"/></svg><svg class="ic-mute"><use href="#i-mute"/></svg></button>
+        <input type="range" id="vol" min="0" max="320" value="256" step="4" aria-label="Volume">
+        <span class="pct" id="volPct">100%</span>
+      </div>
+      <div class="speed">
+        <button class="sbtn" id="bSlower" title="Rallenta"><svg><use href="#i-rew"/></svg></button>
+        <button class="rate" id="bRate" title="Torna alla velocità normale">1.00×</button>
+        <button class="sbtn" id="bFaster" title="Accelera"><svg><use href="#i-ff"/></svg></button>
+      </div>
+      <button class="sbtn" id="bFull" title="Schermo intero sul PC"><svg><use href="#i-full"/></svg></button>
+    </div>
+
+    <form class="open" id="openForm" autocomplete="off">
+      <svg class="lead"><use href="#i-link"/></svg>
+      <input type="text" id="openUrl" placeholder="Indirizzo da aprire: file, rete, YouTube…" spellcheck="false">
+      <button type="submit" class="pill">Riproduci</button>
+      <button type="button" class="pill ghost" id="bEnqueue" title="Aggiungi in coda">Aggiungi</button>
+    </form>
+  </section>
+
+  <section class="card side">
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="playlist" role="tab">Playlist</button>
+      <button class="tab" data-tab="browse" role="tab">Sfoglia</button>
+      <button class="tab" data-tab="eq" role="tab">Equalizzatore</button>
+    </nav>
+
+    <div class="pane active" id="pane-playlist">
+      <div class="pane-head"><span id="plCount">Playlist vuota</span><button class="link danger" id="bClear">Svuota</button></div>
+      <ul class="list" id="plList"></ul>
+      <p class="empty hidden" id="plEmpty">Nessun elemento. Usa "Sfoglia" oppure incolla un indirizzo.</p>
+    </div>
+
+    <div class="pane" id="pane-browse">
+      <div class="crumbs" id="crumbs"></div>
+      <ul class="list" id="brList"></ul>
+    </div>
+
+    <div class="pane" id="pane-eq">
+      <div class="pane-head eq-head">
+        <label class="switch"><input type="checkbox" id="eqOn"><span class="knob"></span><em id="eqOnLabel">Spento</em></label>
+        <select id="eqPreset" aria-label="Preimpostazione"><option value="">Preimpostazione…</option></select>
+      </div>
+      <div class="eq" id="eqBands"></div>
+      <p class="hint">Trascina i cursori: da −20 a +20 dB. La preamplificazione è la prima colonna.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot"><span id="vlcVersion">VLC</span> · interfaccia web Aurora · <a href="#" id="bHelp">scorciatoie</a></footer>
+<dialog class="sheet" id="phoneDlg" aria-labelledby="phoneTitle">
+  <div class="sheet-head">
+    <h2 id="phoneTitle">Collega il telefono</h2>
+    <button class="sbtn" id="bPhoneClose" title="Chiudi"><svg><use href="#i-close"/></svg></button>
+  </div>
+  <div class="sheet-body">
+    <div class="qr" id="phoneQr"></div>
+    <div class="phone-info">
+      <p class="lead">Inquadra il codice con la fotocamera del telefono, collegato alla stessa rete del PC.</p>
+      <div class="addr"><span id="phoneUrl">…</span><button class="link" id="bPhoneCopy">Copia</button></div>
+      <div class="alt hidden" id="phoneAlt"></div>
+      <dl class="cred">
+        <dt>Nome utente</dt><dd>lascialo vuoto</dd>
+        <dt>Password</dt><dd><code id="phonePw">••••••••</code><button class="link" id="bPhonePw">Mostra</button></dd>
+      </dl>
+      <p class="note" id="phoneNote"></p>
+    </div>
+  </div>
+</dialog>
+<div class="toast hidden" id="toast"></div>
+
+<script src="aurora/qr.js"></script>
+<script src="aurora/aurora.js"></script>
+</body>
+</html>

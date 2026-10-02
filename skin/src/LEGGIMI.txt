@@ -1,0 +1,140 @@
+Skin "Aurora" per VLC 3.x (skins2) - sorgenti
+=============================================
+- build_aurora.py : genera immagini (Pillow) + theme.xml e impacchetta Aurora.vlt nella stessa cartella.
+                    Uso: python build_aurora.py   (richiede Pillow e i font Segoe Fluent Icons di Windows)
+- fonts/          : Poppins (licenza OFL) incluso nella skin.
+- La skin installata e' ..\Aurora.vlt: dopo una modifica copiare il nuovo Aurora.vlt li' e riavviare VLC.
+- iterate.sh / shot.ps1 : script usati in sviluppo per ricostruire, riavviare VLC e catturare la finestra.
+Nota tecnica: skins2 su Windows non fonde l'alfa per pixel, quindi ogni immagine e' pre-composta
+sul proprio sfondo (colori piatti o gradienti fissi) e la trasparenza residua e' solo 0/255.
+
+Menu della skin (aggiunto il 2026-10-01)
+----------------------------------------
+- Il pulsante ≡ apre/chiude la finestra "menuwin": voci = immagini pre-composte (icona, etichetta, scorciatoia).
+- L'elenco delle voci e' la lista MENU_ITEMS in build_aurora.py: (id, glifo Segoe Fluent, etichetta, scorciatoia,
+  ha-sottomenu, azione skins2). Le voci con sottomenu (Audio, Video, Riproduzione, Tutte le opzioni) aprono i menu Qt,
+  scuri grazie a qt-dark-palette=1 in vlcrc.
+- Il pannello e' agganciato alla finestra principale (Anchor a 12,48): se si stacca, trascinarlo di nuovo sotto il
+  pulsante ≡ entro 40 px e si riaggancia.
+
+Finestre e menu Qt scuri
+------------------------
+- In vlcrc: qt-dark-palette=1. In vlc-qt-interface.ini, sezione [MainWindow]: QtStyle=Fusion
+  (equivale a Preferenze > Interfaccia > "Forza stile finestra" = Fusion). Con lo stile nativo di Windows la palette
+  scura lasciava campi bianchi ed etichette illeggibili; Fusion disegna tutto dalla palette.
+- Entrambi i file vengono riscritti da VLC alla chiusura: modificarli solo con VLC chiuso.
+
+==================================================================
+Aggiornamento 1 ottobre 2026: scala 1,5x, stati attivi, equalizzatore
+==================================================================
+
+Perche' la skin ora e' generata a 1,5x
+  vlc.exe diventa "DPI aware" appena carica Qt, quindi skins2 disegna la skin 1:1 in pixel
+  fisici. Sul tuo schermo 7680x2160 al 150% la vecchia skin appariva a 2/3 della dimensione
+  prevista (testo 12 px, pulsanti piccoli) rispetto alle finestre Qt. Ora ogni misura, font e
+  immagine e' moltiplicata per AURORA_SCALE (predefinito 1.5): finestra principale 1440x900,
+  menu 378x741, playlist 540x780, equalizzatore 735x363, controller schermo intero 1080x168.
+  Aurora-100.vlt e' la stessa skin a scala 1 (per un monitor al 100%).
+
+Novita' grafiche e funzionali
+  - Interruttori (pin "primo piano", casuale, ripetizione, playlist, menu): da attivi sono color
+    accento con puntino, al passaggio del mouse compare un anello color accento, premuti si
+    riempiono. Il pin attivo usa il glifo "pinned" pieno. Da spenti sono leggermente attenuati.
+  - Muto attivo mostrato in colore accento (stato "acceso").
+  - Ripetizione a tre stati come nel VLC classico: spenta -> tutta la playlist -> un solo
+    brano -> spenta (due Checkbox sovrapposte con visibilita' alternata).
+  - Controllo velocita' nella barra comandi, visibile solo in riproduzione: [<<] 1x [>>]
+    (vlc.slower / vlc.faster; il testo usa la variabile $R).
+  - Finestra Equalizzatore (voce di menu): preamplificazione + 10 bande con slider verticali
+    bipolari (riempimento dal centro 0 dB), pillola Attivo/Spento, chiusura. Si aggancia sotto
+    la playlist (ancora prio 7 -> 6); posizione iniziale scritta in skins2-config.
+  - Larghezza minima della finestra principale alzata a 840 (logici) per evitare
+    sovrapposizioni tra i gruppi di pulsanti.
+
+Come ricostruire
+  cd aurora-src ; set AURORA_SCALE=1.5 ; python build_aurora.py   (circa 40 s, serve Pillow)
+  copiare Aurora.vlt in %APPDATA%/vlc/skins2/Aurora.vlt e riavviare VLC.
+  Con AURORA_SCALE=1 si ottiene la variante al 100%.
+
+Come provare SENZA toccare il VLC in uso
+  bash testrun.sh prova.png  -> crea test-vlcrc (copia del tuo vlcrc con posizioni di prova,
+  via mk_testcfg.py), avvia "vlc --config=test-vlcrc --no-one-instance" con la skin appena
+  generata, cattura le finestre con shot2.ps1 (PrintWindow) e stampa gli avvisi skins2 del log.
+  AURORA_DEBUG_FS=1 alla build aggiunge una copia visibile del controller schermo intero.
+  L'istanza di prova risponde sull'interfaccia HTTP (porta 8080, password del vlcrc):
+  requests/status.json?command=in_play&input=file:///...  |  rate&val=1.5  |  pl_repeat  |  pl_loop
+  (pl_repeat e pl_loop si escludono a vicenda, come nell'interfaccia Qt).
+  hover2.ps1 -ProcId <pid> -X <x> -Y <y> [-Click] muove il puntatore in coordinate 1:1 relative
+  alla finestra piu' grande dell'istanza indicata (nessun fattore DPI: il processo e' DPI aware).
+  crop_bars.py ritaglia barra titolo e barra comandi della finestra principale da una cattura.
+
+Trappole skins2 scoperte
+  - Una Checkbox con state e visible sulla STESSA variabile non cambia mai set di immagini
+    (CtrlGeneric::onUpdate la tratta solo come visibilita'): usare un'espressione distinta,
+    ad esempio visible="playlist.isRepeat and true".
+  - Gli slider verticali: points="(cx,h-1),(cx,0)" -> valore 0 in basso; il fotogramma di
+    sfondo puo' essere piu' largo della curva.
+  - Font e colori del tooltip sono fissi nel codice (defaultfont, sfondo giallo): non si cambiano.
+
+==================================================================
+Aggiornamento 1 ottobre 2026 (sera): menu a cassetto, playlist a filo, testo di attesa
+==================================================================
+
+Menu a cassetto dentro la finestra (niente piu' finestra "menuwin")
+  Una finestra separata non puo' restare sopra la principale: in skins2 ogni clic chiama
+  SetForegroundWindow solo sulla finestra cliccata (TopWindow::processEvent -> WindowManager::raise ->
+  Win32Window::raise), quindi il pannello finiva dietro. Il menu e' ora un secondo layout della
+  finestra principale, mainMenuLayout, identico al primo ma con una colonna a sinistra (cassetto di
+  252 unita' logiche) e l'area video spostata a destra. Il pulsante ≡ e' una Checkbox con
+  state="mainMenuLayout.isActive" e azioni main.setLayout(mainMenuLayout) / main.setLayout(mainLayout).
+  skins2 conserva la dimensione della finestra nel passaggio perche' i due layout hanno la stessa
+  misura di partenza (TopWindow::setActiveLayout, "tightly coupled") e il video si riaggancia al
+  controllo Video del layout attivo (CtrlVideo osserva la variabile isActive del proprio layout).
+  Il cassetto copre anche la parte sinistra della barra comandi: nel layout con menu i pulsanti
+  "apri" e il gruppo velocita' non vengono disegnati. L'altezza minima della finestra e' calcolata
+  perche' il cassetto stia tutto dentro (TB + altezza voci + margine).
+
+Playlist larga quanto l'equalizzatore
+  PW = EQ_W: impilate a destra sono a filo. Il ridimensionamento in skins2 non ha calamita,
+  quindi la larghezza di partenza uguale e' l'unico modo di tenerle allineate.
+
+Emblema e testo di attesa in un unico Panel
+  Con xkeepratio/ykeepratio ogni controllo mantiene il rapporto del PROPRIO spazio libero: con la
+  finestra bassa il testo saliva sopra il cerchio. Ora Button e Text stanno in un Panel centrato,
+  cosi' restano sempre alla stessa distanza.
+
+Strumenti di prova
+  hover2.ps1 porta la finestra in primo piano prima di cliccare (altrimenti il clic va alla finestra
+  che copre quel punto). Gli elementi passati da riga di comando a un'istanza --config non vengono
+  messi in coda: usare l'API HTTP (requests/status.json?command=in_play&input=...).
+  La cartella utente lua/http sostituisce PER INTERO quella di sistema: per provare una pagina web
+  usare --http-src=<cartella completa> e --http-port=8099.
+
+==================================================================
+Aggiornamento 1 ottobre 2026 (mattina): cornice disegnata da Windows
+==================================================================
+
+Il difetto
+  Selezionando un'altra finestra compariva una cornice chiara attorno alla skin. Era il telaio
+  ridimensionabile aggiunto per lo Snap: Windows lo ridisegna a ogni cambio di focus in stile
+  classico, sopra i bordi della skin. Il plugin skins2 del kit ora lo impedisce (plugin/LEGGIMI.txt).
+
+Finestre rettangolari, contorno del DWM (NATIVE_FRAME)
+  Finestra principale, playlist ed equalizzatore non hanno piu' gli angoli ritagliati nelle
+  immagini: sono rettangoli pieni, con il bordo di 1 pixel lungo tutto il perimetro. Il plugin
+  riconosce la sagoma rettangolare e non applica la region, cosi' il contorno lo disegna Windows:
+  su Windows 11 angoli arrotondati con antialias (raggio 8 px logici, quello di sistema), ombra e
+  bordo nel colore del pixel in alto al centro della finestra (BORDER_C per le barre del titolo).
+  Da ingrandita o agganciata la finestra ha gli angoli vivi, come ogni finestra di Windows.
+  Una region, anche rettangolare, spegne tutto questo: per questo la sagoma ritagliata dava bordi
+  scalettati e nessuna ombra.
+  - WIN_R  = raggio della sagoma nelle immagini (0 con NATIVE_FRAME, RADIUS altrimenti)
+  - CORNER = ingombro dell'angolo: il filetto chiaro in alto parte da li' (sc(8) con NATIVE_FRAME)
+  - Il controller a schermo intero resta sagomato (fs_panel, raggio RADIUS): e' un popup senza telaio.
+  AURORA_NATIVE_FRAME=0 rigenera la skin con la sagoma di prima (raggio 14, bordi netti, niente
+  ombra). Con il plugin skins2 originale di VLC la skin attuale funziona ma resta ad angoli vivi.
+
+Come provare il comportamento al cambio di focus
+  Su un'istanza di prova (testrun.sh) portare in primo piano un'altra finestra e catturare lo
+  schermo (non PrintWindow: ombra, angoli e bordo del DWM non fanno parte della finestra). I bordi
+  interni della finestra devono restare identici pixel per pixel tra attiva e inattiva.

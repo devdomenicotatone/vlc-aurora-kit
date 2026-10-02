@@ -1,0 +1,20 @@
+<?vlc
+--[[ Dati per il riquadro "Collega il telefono" della pagina Aurora (il server web di VLC elabora i file .json).
+     indirizzi: indirizzi IPv4 del PC nella rete locale. Li pubblica il plugin skins2 del kit in una variabile di
+                libvlc; con il plugin ufficiale di VLC la variabile non c'e' e l'elenco resta vuoto.
+     pc:        nome del computer, usato come ripiego quando gli indirizzi mancano.
+     password:  password dell'interfaccia web, che la pagina mostra solo su richiesta. ]]
+local function json(s)
+  return '"' .. (string.gsub(tostring(s or ""), '[%c"\\]', function(c) return string.format("\\u%04x", string.byte(c)) end)) .. '"'
+end
+local indirizzi = {}
+pcall(function()
+  local libvlc = vlc.object.libvlc()
+  vlc.var.trigger_callback(libvlc, "skins2-lan-refresh")
+  for ip in string.gmatch(vlc.var.get(libvlc, "skins2-lan-addresses") or "", "%S+") do
+    table.insert(indirizzi, json(ip))
+  end
+end)
+print('{"indirizzi":[' .. table.concat(indirizzi, ",") .. '],"pc":' .. json(os.getenv("COMPUTERNAME")) ..
+      ',"password":' .. json(vlc.var.inherit(nil, "http-password")) .. '}')
+?>
